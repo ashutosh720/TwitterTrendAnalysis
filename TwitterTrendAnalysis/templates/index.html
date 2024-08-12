@@ -1,0 +1,92 @@
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles2.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Time Tweets Analysis</title>
+    <style>
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .chart-item {
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 30px;
+        }
+        .chart-item img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Real Time Tweets Analysis</h1>
+            <p>Upload a CSV file to analyze tweets</p>
+        </div>
+    </header>
+    <main>
+        <form method="post" enctype="multipart/form-data" class="file-upload">
+            <input type="file" name="file" accept=".csv" required>
+            <button type="submit">Analyze</button>
+        </form>
+        <div id="results"></div>
+    </main>
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                let resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '';
+
+                if (data.improved_summary) {
+                    let summarySection = document.createElement('section');
+                    summarySection.innerHTML = '<h2>Tweet Summary</h2>';
+                    summarySection.innerHTML += `<pre>${data.improved_summary}</pre>`;
+                    resultsDiv.appendChild(summarySection);
+                }
+
+                if (data.basic_stats) {
+                    let basicStatsSection = document.createElement('section');
+                    basicStatsSection.innerHTML = '<h2>Basic Statistics</h2>';
+                    basicStatsSection.innerHTML += data.basic_stats;
+                    resultsDiv.appendChild(basicStatsSection);
+                }
+
+                if (data.top_hashtags) {
+                    let topHashtagsSection = document.createElement('section');
+                    topHashtagsSection.innerHTML = '<h2>Top Hashtags</h2>';
+                    topHashtagsSection.innerHTML += '<pre>' + data.top_hashtags + '</pre>';
+                    resultsDiv.appendChild(topHashtagsSection);
+                }
+
+                if (data.visualizations) {
+                    let visualizationsSection = document.createElement('section');
+                    visualizationsSection.innerHTML = '<h2>Visualizations</h2>';
+                    visualizationsSection.innerHTML += '<div class="chart-container">';
+                    data.visualizations.forEach((img, index) => {
+                        visualizationsSection.innerHTML += `<div class="chart-item"><img src="data:image/png;base64,${img}" alt="Visualization ${index + 1}"></div>`;
+                    });
+                    visualizationsSection.innerHTML += '</div>';
+                    resultsDiv.appendChild(visualizationsSection);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+"""

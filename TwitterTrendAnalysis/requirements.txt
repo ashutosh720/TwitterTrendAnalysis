@@ -1,0 +1,10 @@
+flask
+pandas
+matplotlib
+seaborn
+nltk
+textblob
+transformers
+torch
+spacy
+gensim
